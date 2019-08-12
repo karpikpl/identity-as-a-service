@@ -9,7 +9,7 @@ using IdentityServer4.Test;
 using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace IndentityServer
+namespace IdentityServer
 {
     public static class Config
     {
@@ -56,6 +56,9 @@ namespace IndentityServer
                     // Specifies whether this client can request refresh tokens
                     AllowOfflineAccess = true,
                     RequireClientSecret = false,
+                    
+                    // no consent page
+                    RequireConsent = false,
 
                     // where to redirect to after login
                     RedirectUris = { "http://localhost:8080/callback.html" },

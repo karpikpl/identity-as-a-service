@@ -3,13 +3,14 @@
 
 
 using System;
+using System.Collections.Generic;
 using IdentityServer4.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace IndentityServer
+namespace IdentityServer
 {
     public class Startup
     {
@@ -22,10 +23,29 @@ namespace IndentityServer
 
         public void ConfigureServices(IServiceCollection services)
         {
-            // uncomment, if you want to add an MVC-based UI
-            services.AddMvc().SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_1);
+            Microsoft.IdentityModel.Logging.IdentityModelEventSource.ShowPII = true;
 
-            var builder = services.AddIdentityServer()
+            services.AddCors(setup =>
+            {
+                setup.AddDefaultPolicy(policy =>
+                {
+                    policy.AllowAnyHeader();
+                    policy.AllowAnyMethod();
+                    policy.WithOrigins("http://localhost:8082");
+                    policy.AllowCredentials();
+                });
+            });
+
+            services.AddMvcCore()
+                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_1)
+                .AddJsonFormatters();
+
+            var builder = services.AddIdentityServer(options => 
+            {
+                options.UserInteraction.LoginUrl = "http://localhost:8082/index";
+                options.UserInteraction.ErrorUrl = "http://localhost:8082/error";
+                options.UserInteraction.LogoutUrl = "http://localhost:8082/logout";
+            })
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApis())
                 .AddInMemoryClients(Config.GetClients())
@@ -45,6 +65,7 @@ namespace IndentityServer
                 AllowAll = true
             };
             services.AddSingleton<ICorsPolicyService>(cors);
+            services.AddTransient<IReturnUrlParser, ReturnUrlParser>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -55,12 +76,14 @@ namespace IndentityServer
             }
 
             // uncomment if you want to support static files
-            app.UseStaticFiles();
+            //app.UseStaticFiles();
 
             app.UseIdentityServer();
 
+            app.UseCors();
+
             // uncomment, if you want to add an MVC-based UI
-            app.UseMvcWithDefaultRoute();
+            app.UseMvc();
         }
     }
 }
