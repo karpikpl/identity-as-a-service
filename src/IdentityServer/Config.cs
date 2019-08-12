@@ -64,7 +64,7 @@ namespace IdentityServer
                     RedirectUris = { "http://localhost:8080/callback.html" },
 
                     // where to redirect to after logout
-                    PostLogoutRedirectUris = { "http://localhost:8080/logout.html" },
+                    PostLogoutRedirectUris = { "http://localhost:8080/index.html" },
 
                     AllowedScopes = new List<string>
                     {
